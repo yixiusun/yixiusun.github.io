@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title></title>
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Caveat+Brush&family=Caveat:wght@400..700&display=swap" rel="stylesheet">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="./ice.js"></script>
+<script src="./bomb.js"></script>
+<style>
+    :root {
+        --color-bg: #12181b;
+        --color-text: #e6eaed;
+        --color-border: #223034;
+    }
+    body {
+        margin: 0;
+        background: var(--color-bg);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        gap: 16px;
+        font-family: "Alfa Slab One", serif;
+        color: var(--color-text);
+    }
+    .stage {
+        position: relative;
+        width: min(99vw, calc(99vh * 2));
+        aspect-ratio: 2 / 1;
+        max-height: 99vh;
+    }
+    #gameCanvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 1px solid var(--color-border);
+        background: #0b1e34;
+    }
+    #mySVG {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: 1px solid var(--color-border);
+        background: rgba(11, 30, 52, 0.4);
+        pointer-events: none;
+    }
+</style>
+</head>
+<body>
+<div class="stage">
+    <canvas id="gameCanvas" width="3000" height="1500"></canvas>
+    <svg id="mySVG" width="3000" height="1500" viewBox="0 0 3000 1500" preserveAspectRatio="xMidYMid meet"></svg>
+</div>
+<script>
+(function() {
+    const svgns = "http://www.w3.org/2000/svg";
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = false;
+
+    const svgHeight = 1500;
+    const svgWidth = 3000;
+    const unit0 = 120;
+    const maxV0 = unit0 * 4;
+    const stepTime = 5;
+    const playerRadius = 30;
+    const weaponRadius = 70;
+    const ballRadius = 20;
+    let cheatMode = 0;
+    let svgVisible = true;
+    const gameDurationMs = 3 * 60 * 1000;
+
+    const spriteFrameWidth = 50;
+    const spriteFrameHeight = 64;
+    const walkFrameCount = 6;
+    const walkFrameDuration = 120;
+    const spriteScale = 2.5;
+    const idleDirOrders = [
+        [6, 7, 5, 4, 0, 2, 1, 3],
+        [3, 6, 7, 0, 4, 5, 1, 2]
+    ];
+    const idleDirToColumnBySheet = idleDirOrders.map((order) => (
+        order.reduce((acc, dir, idx) => {
+            acc[dir] = idx;
+            return acc;
+        }, {})
+    ));
+    const walkRowByDirectionSheets = [
+        { // p1.png
+            0: 1,
+            2: 2,
+            1: 3,
+            3: 4,
+            6: 5,
+            7: 6,
+            5: 7,
+            4: 8
+        },
+        { // p2.png
+            0: 1,
+            1: 3,
+            2: 2,
+            3: 4,
+            4: 9,
+            5: 8,
+            6: 6,
+            7: 7
+        }
+    ];
+
+    const playerSpriteSheets = [
+        { src: "./p1.png", image: new Image(), ready: false },
+        { src: "./p2.png", image: new Image(), ready: false }
+    ];
+
+    const backgroundImage = { src: "./background.png", image: new Image(), ready: false };
+    const ballSpriteSheet = {
+        src: "./ball.png",
+        image: new Image(),
+        ready: false,
+        frameSize: 256,
+        frameDuration: 120,
+        animations: {
+            single: [
+                { sx: 0, sy: 384 },
+                { sx: 256, sy: 384 },
+                { sx: 512, sy: 384 },
+                { sx: 768, sy: 384 }
+            ]
+        }
+    };
+
+
+    const weaponSprites = [
+        {
+            src: "./weapon1.png",
+            image: new Image(),
+            ready: false,
+            crop: {
+                sx: (1080 - 607) / 2,
+                sy: 0,
+                sw: 607,
+                sh: 607
+            }
+        },
+        {
+            src: "./weapon2.png",
+            image: new Image(),
+            ready: false,
+            crop: {
+                sx: (1080 - 607) / 2,
+                sy: 0,
+                sw: 607,
+                sh: 607
+            }
+        }
+    ];
+
+    backgroundImage.image.onload = function() {
+        backgroundImage.ready = true;
+    };
+    backgroundImage.image.src = backgroundImage.src;
+
+    ballSpriteSheet.image.onload = function() {
+        ballSpriteSheet.ready = true;
+    };
+    ballSpriteSheet.image.src = ballSpriteSheet.src;
+
+    playerSpriteSheets.forEach((sheet) => {
+        sheet.image.onload = function() {
+            sheet.ready = true;
+        };
+        sheet.image.src = sheet.src;
+    });
+
+    weaponSprites.forEach((weapon) => {
+        weapon.image.onload = function() {
+            weapon.ready = true;
+        };
+        weapon.image.src = weapon.src;
+    });
+
+    const colorPalette = ["skyblue", "#FFA69E", "#70A9A1", "#B8F2E6"]; // 原色配置保留
+    const playerKeyLayout = [['a', 'd', 'w', 's', 0], [37, 39, 38, 40, 1], ['j', 'l', 'i', 'k', 0], ['p', ']', '-', '[', 0]];
+    const playerSpawn = [[500, 500, 400, 400], [2500, 500, 2600, 400], [500, 1000, 400, 1100], [2500, 1000, 2600, 1100]];
+
+    const gameState = {
+        players: [],
+        balls: [],
+        ices: [],
+        bombs: [],
+        scores: { left: 0, right: 0 },
+        cheatMode: 0,
+        dieMessage: "",
+        dieUntil: 0,
+        gameOver: false
+    };
+
+    const players = [];
+    const balls = [];
+    let iceManager = null;
+    let bombManager = null;
+    let playerCount = 0;
+    let ballCount = 0;
+    let leftScore = 0;
+    let rightScore = 0;
+    let dieTimer = null;
+    let gameStartTime = null;
+
+    function playerDieShow(index) {
+        const message = "player " + (index + 1) + " died";
+        if (dieTimer) clearTimeout(dieTimer);
+        dieTimer = setTimeout(() => {}, 1000);
+        gameState.dieMessage = message;
+        gameState.dieUntil = Date.now() + 1000;
+    }
+
+    function gameOverShow() {
+        gameState.gameOver = true;
+    }
+
+    function checkGameOver(cx, cy) {
+        if (cx < 0 || cx > svgWidth) return 1;
+        if (cy < 0 || cy > svgHeight) return 1;
+        return 0;
+    }
+
+    function updateScoreDisplay() {
+        gameState.scores.left = leftScore;
+        gameState.scores.right = rightScore;
+        gameState.cheatMode = cheatMode;
+    }
+
+    function moveCircle(circle, velocity, checkOut) {
+        const cx = parseFloat(circle.attr("cx"));
+        const cy = parseFloat(circle.attr("cy"));
+        const nx = cx + velocity.sx * stepTime / 1000;
+        const ny = cy + velocity.sy * stepTime / 1000;
+        circle.attr("cx", nx);
+        circle.attr("cy", ny);
+        if (checkOut && checkGameOver(nx, ny)) {
+            return 1;
+        }
+        return 0;
+    }
+
+    function updateFriction(velocity) {
+        if (velocity.sx === 0 && velocity.sy === 0) return;
+        const factor = 1 / Math.sqrt(velocity.sx * velocity.sx + velocity.sy * velocity.sy);
+        const kk = -0.001;
+        velocity.sx += kk * factor * stepTime * unit0 * velocity.sx;
+        velocity.sy += kk * factor * stepTime * unit0 * velocity.sy;
+    }
+
+    function updateWeaponPull(playerCircle, weaponCircle, weaponVelocity) {
+        const cx = parseFloat(playerCircle.attr("cx"));
+        const cy = parseFloat(playerCircle.attr("cy"));
+        const wx = parseFloat(weaponCircle.attr("cx"));
+        const wy = parseFloat(weaponCircle.attr("cy"));
+        const distSq = (cx - wx) * (cx - wx) + (cy - wy) * (cy - wy);
+        const rangeSq = 200 * 200;
+        if (distSq > rangeSq) {
+            const ratio = (distSq - rangeSq) / distSq;
+            const co = Math.pow(ratio, 1.2);
+            const kk = 0.003;
+            weaponVelocity.sx += kk * co * stepTime * unit0 * (cx - wx);
+            weaponVelocity.sy += kk * co * stepTime * unit0 * (cy - wy);
+        }
+    }
+
+    function updateLine(line, playerCircle, weaponCircle) {
+        line.attr("x1", playerCircle.attr("cx"));
+        line.attr("y1", playerCircle.attr("cy"));
+        line.attr("x2", weaponCircle.attr("cx"));
+        line.attr("y2", weaponCircle.attr("cy"));
+    }
+
+    function determineDirection(dx, dy, fallbackDir) {
+        const epsilon = 0.01;
+        if (Math.abs(dx) < epsilon && Math.abs(dy) < epsilon) {
+            return typeof fallbackDir === "number" ? fallbackDir : 0;
+        }
+        const hasX = Math.abs(dx) >= epsilon;
+        const hasY = Math.abs(dy) >= epsilon;
+        const signX = dx > 0 ? 1 : (dx < 0 ? -1 : 0);
+        const signY = dy > 0 ? 1 : (dy < 0 ? -1 : 0);
+        if (hasX && hasY) {
+            if (signX > 0 && signY > 0) return 1;
+            if (signX < 0 && signY > 0) return 3;
+            if (signX < 0 && signY < 0) return 5;
+            if (signX > 0 && signY < 0) return 7;
+        }
+        if (hasX) return signX > 0 ? 0 : 4;
+        if (hasY) return signY > 0 ? 2 : 6;
+        return typeof fallbackDir === "number" ? fallbackDir : 0;
+    }
+
+    function updatePlayerSpriteState(playerState, deltaX, deltaY) {
+        const sprite = playerState.sprite;
+        const newDirection = determineDirection(deltaX, deltaY, sprite.direction);
+        sprite.direction = newDirection;
+        const movementMagnitude = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        const moving = movementMagnitude > 0.5;
+        if (!moving) {
+            sprite.moving = false;
+            sprite.frameIndex = 0;
+            sprite.frameTimer = 0;
+            return;
+        }
+        sprite.moving = true;
+        sprite.frameTimer += stepTime;
+        const frameDuration = sprite.frameDuration || walkFrameDuration;
+        if (sprite.frameTimer >= frameDuration) {
+            sprite.frameTimer = 0;
+            sprite.frameIndex = (sprite.frameIndex + 1) % walkFrameCount;
+        }
+    }
+
+    function createPlayer() {
+        const svg = $("#mySVG");
+        const idx = playerCount;
+        const pos = playerSpawn[idx];
+        const body = $(document.createElementNS(svgns, "circle"));
+        body.attr({
+            cx: pos[0], cy: pos[1], r: playerRadius,
+            stroke: "black", "stroke-width": 2, fill: colorPalette[idx % colorPalette.length]
+        }).appendTo(svg);
+
+        const weapon = $(document.createElementNS(svgns, "circle"));
+        weapon.attr({
+            cx: pos[2], cy: pos[3], r: weaponRadius,
+            stroke: "black", "stroke-width": 2, fill: "white"
+        }).appendTo(svg);
+
+        const tether = $(document.createElementNS(svgns, "line"));
+        tether.attr({ stroke: "black", "stroke-width": 2 }).appendTo(svg);
+
+        const velocity = { sx: 0, sy: 0 };
+        const weaponVelocity = { sx: 0, sy: 0 };
+
+        const initialDirection = determineDirection(pos[2] - pos[0], pos[1] - pos[3], 0);
+        let spawnDirection = initialDirection;
+        if (idx === 0 || idx === 1) {
+            spawnDirection = 6;
+        }
+        const state = {
+            id: idx,
+            color: colorPalette[idx % colorPalette.length],
+            position: { x: pos[0], y: pos[1] },
+            weapon: { x: pos[2], y: pos[3], radius: weaponRadius },
+            velocity: velocity,
+            weaponVelocity: weaponVelocity,
+            alive: 1,
+            lastPosition: { x: pos[0], y: pos[1] },
+            sprite: {
+                direction: spawnDirection,
+                frameIndex: 0,
+                frameTimer: 0,
+                frameDuration: walkFrameDuration,
+                moving: false
+            },
+            spriteSheetIndex: idx % playerSpriteSheets.length,
+            weaponSpriteIndex: idx % weaponSprites.length,
+            weaponFrozen: false,
+            weaponFrozenUntil: 0
+        };
+
+        function updatePlayer(cheatOn) {
+            const previousX = state.lastPosition.x;
+            const previousY = state.lastPosition.y;
+            const now = Date.now();
+            if (state.weaponFrozen && now >= state.weaponFrozenUntil) {
+                state.weaponFrozen = false;
+            }
+            if (state.weaponFrozen) {
+                weaponVelocity.sx = 0;
+                weaponVelocity.sy = 0;
+            } else {
+                moveCircle(weapon, weaponVelocity, 0);
+            }
+            const dead = moveCircle(body, velocity, 1);
+            if (dead) return 1;
+            if (!state.weaponFrozen) {
+                updateWeaponPull(body, weapon, weaponVelocity);
+                updateFriction(weaponVelocity);
+            }
+            updateLine(tether, body, weapon);
+            state.position.x = parseFloat(body.attr("cx"));
+            state.position.y = parseFloat(body.attr("cy"));
+            state.weapon.x = parseFloat(weapon.attr("cx"));
+            state.weapon.y = parseFloat(weapon.attr("cy"));
+            const deltaX = state.position.x - previousX;
+            const deltaY = previousY - state.position.y;
+            updatePlayerSpriteState(state, deltaX, deltaY);
+            state.lastPosition.x = state.position.x;
+            state.lastPosition.y = state.position.y;
+            return 0;
+        }
+
+        updateLine(tether, body, weapon);
+        playerCount += 1;
+        return { body, weapon, tether, velocity, weaponVelocity, updatePlayer, state };
+    }
+
+    function createBall() {
+        const svg = $("#mySVG");
+        const index = ballCount;
+        const ball = $(document.createElementNS(svgns, "circle"));
+        const fromTop = Math.random() > 0.5 ? 1 : -1;
+        const spawnX = Math.random() * 1000 + 1000;
+        const spawnY = 750 - fromTop * 850;
+        ball.attr({ cx: spawnX, cy: spawnY, r: 15, fill: "grey" }).appendTo(svg);
+
+        const velocity = {
+            sx: (Math.random() * 200) - 100,
+            sy: (Math.random() * Math.pow(100, 2)) ** 0.5 + 200
+        };
+        velocity.sy *= fromTop;
+
+        const state = {
+            id: index,
+            position: { x: spawnX, y: spawnY },
+            velocity: velocity,
+            radius: 15,
+            exist: 1,
+            sprite: {
+                type: "single",
+                frameIndex: 0,
+                frameTimer: 0
+            }
+        };
+
+        const justCollided = Array.from({ length: playerCount }, () => [performance.now() - 100000, performance.now() - 100000]);
+        const delayMs = 2000;
+
+        function reflectVelocity(locx, locy, targetVelocity, specialMode) {
+            if(specialMode == "player") return ; // 禁用玩家反弹 111
+            const norm = 1 / Math.sqrt(locx * locx + locy * locy);
+            const nx = locx * norm;
+            const ny = locy * norm;
+            if (specialMode === "player" && cheatMode === 1) {
+                velocity.sx = -1000;
+                velocity.sy = 0;
+                return;
+            }
+            if (specialMode === "weapon" && cheatMode === 1) {
+                velocity.sx = -1000;
+                velocity.sy = 0;
+                return;
+            }
+            const dotBall = velocity.sx * nx + velocity.sy * ny;
+            const dotTarget = targetVelocity.sx * nx + targetVelocity.sy * ny;
+            const lessBug = 0;
+            if (dotBall * dotTarget > 0 && lessBug !== 0) {
+                velocity.sx += -lessBug * dotBall * nx + lessBug * dotTarget * nx;
+                velocity.sy += -lessBug * dotBall * ny + lessBug * dotTarget * ny;
+            } else {
+                velocity.sx += -2 * dotBall * nx + 2 * dotTarget * nx;
+                velocity.sy += -2 * dotBall * ny + 2 * dotTarget * ny;
+            }
+        }
+
+        function updateBall() {
+            if (!state.exist) return;
+
+            moveCircle(ball, velocity, 0);
+            state.position.x = parseFloat(ball.attr("cx"));
+            state.position.y = parseFloat(ball.attr("cy"));
+
+            if (ballSpriteSheet.ready && state.sprite) {
+                const frames = ballSpriteSheet.animations[state.sprite.type] || ballSpriteSheet.animations.single;
+                if (frames && frames.length > 0) {
+                    state.sprite.frameTimer += stepTime;
+                    if (state.sprite.frameTimer >= ballSpriteSheet.frameDuration) {
+                        state.sprite.frameTimer = 0;
+                        state.sprite.frameIndex = (state.sprite.frameIndex + 1) % frames.length;
+                    }
+                }
+            }
+
+            for (let i = 0; i < playerCount; i += 1) {
+                const ply = players[i];
+                if (!ply) continue;
+                const px = parseFloat(ply.body.attr("cx"));
+                const py = parseFloat(ply.body.attr("cy"));
+                const locx = px - state.position.x;
+                const locy = py - state.position.y;
+                const distPlayerSq = locx * locx + locy * locy;
+                const now = performance.now();
+                if (distPlayerSq <= Math.pow(playerRadius + ballRadius, 2) && now > justCollided[i][0] + delayMs) {
+                    reflectVelocity(locx, locy, ply.velocity, "player");
+                    justCollided[i][0] = now;
+                }
+
+                const wx = parseFloat(ply.weapon.attr("cx"));
+                const wy = parseFloat(ply.weapon.attr("cy"));
+                const locxW = wx - state.position.x;
+                const locyW = wy - state.position.y;
+                const distWeaponSq = locxW * locxW + locyW * locyW;
+                if (distWeaponSq <= Math.pow(weaponRadius + ballRadius, 2) && now > justCollided[i][1] + delayMs) {
+                    reflectVelocity(locxW, locyW, ply.weaponVelocity, "weapon");
+                    justCollided[i][1] = now;
+                }
+            }
+
+            const xBound = 20;
+            if (state.position.x < xBound && state.position.y > 0 && state.position.y < svgHeight) {
+                state.exist = 0;
+                rightScore += 1;
+                ball.remove();
+            } else if (state.position.x > svgWidth - xBound && state.position.y > 0 && state.position.y < svgHeight) {
+                state.exist = 0;
+                leftScore += 1;
+                ball.remove();
+            }
+
+        }
+
+        ballCount += 1;
+        return { ball, velocity, updateBall, state };
+    }
+
+    function resetPlayerToSpawn(index) {
+        const ply = players[index];
+        if (!ply) return;
+        const spawn = playerSpawn[index];
+        ply.body.attr({ cx: spawn[0], cy: spawn[1] });
+        ply.weapon.attr({ cx: spawn[2], cy: spawn[3] });
+        ply.velocity.sx = 0;
+        ply.velocity.sy = 0;
+        ply.weaponVelocity.sx = 0;
+        ply.weaponVelocity.sy = 0;
+        ply.state.position.x = spawn[0];
+        ply.state.position.y = spawn[1];
+        ply.state.weapon.x = spawn[2];
+        ply.state.weapon.y = spawn[3];
+        ply.state.lastPosition.x = spawn[0];
+        ply.state.lastPosition.y = spawn[1];
+        ply.state.weaponFrozen = false;
+        ply.state.weaponFrozenUntil = 0;
+        let respawnDir = determineDirection(spawn[2] - spawn[0], spawn[1] - spawn[3], ply.state.sprite.direction);
+        if (index === 0 || index === 1) {
+            respawnDir = 6;
+        }
+        ply.state.sprite.direction = respawnDir;
+        ply.state.sprite.frameIndex = 0;
+        ply.state.sprite.frameTimer = 0;
+        ply.state.sprite.moving = false;
+        ply.state.alive = 1;
+    }
+
+    function handlePlayerDeath(index) {
+        const ply = players[index];
+        if (!ply) return;
+        ply.state.alive = 0;
+        playerDieShow(index);
+        resetPlayerToSpawn(index);
+        if (index % 2 === 0) rightScore += 1;
+        else leftScore += 1;
+    }
+
+    function syncGameState() {
+        gameState.players.length = 0;
+        for (let i = 0; i < players.length; i += 1) {
+            const ply = players[i];
+            if (!ply) continue;
+            gameState.players.push({
+                id: ply.state.id,
+                color: ply.state.color,
+                position: { x: ply.state.position.x, y: ply.state.position.y },
+                weapon: { x: ply.state.weapon.x, y: ply.state.weapon.y },
+                alive: ply.state.alive,
+                sprite: {
+                    direction: ply.state.sprite.direction,
+                    frame: ply.state.sprite.frameIndex,
+                    moving: ply.state.sprite.moving
+                }
+            });
+        }
+
+        gameState.balls.length = 0;
+        for (let i = 0; i < balls.length; i += 1) {
+            const ball = balls[i];
+            if (!ball || ball.state.exist === 0) continue;
+            gameState.balls.push({
+                id: ball.state.id,
+                position: { x: ball.state.position.x, y: ball.state.position.y }
+            });
+        }
+
+        gameState.ices.length = 0;
+        if (iceManager) {
+            const iceStates = iceManager.getStates();
+            for (let i = 0; i < iceStates.length; i += 1) {
+                const ice = iceStates[i];
+                gameState.ices.push({
+                    id: ice.id,
+                    position: { x: ice.position.x, y: ice.position.y }
+                });
+            }
+        }
+
+        gameState.bombs.length = 0;
+        if (bombManager) {
+            const bombStates = bombManager.getStates();
+            for (let i = 0; i < bombStates.length; i += 1) {
+                const bomb = bombStates[i];
+                gameState.bombs.push({
+                    id: bomb.id,
+                    position: { x: bomb.position.x, y: bomb.position.y },
+                    exploding: bomb.exploding
+                });
+            }
+        }
+    }
+
+    function getSpriteFrameRect(direction, moving, frameIndex, sheetIndex) {
+        if (!moving) {
+            const idleMap = idleDirToColumnBySheet[sheetIndex] || idleDirToColumnBySheet[0];
+            const idleColumn = Object.prototype.hasOwnProperty.call(idleMap, direction) ? idleMap[direction] : idleMap[0];
+            return { sx: idleColumn * spriteFrameWidth, sy: 0 };
+        }
+        const mapping = walkRowByDirectionSheets[sheetIndex] || walkRowByDirectionSheets[0];
+        const defaultRow = mapping[0] || 0;
+        const walkRow = Object.prototype.hasOwnProperty.call(mapping, direction) ? mapping[direction] : defaultRow;
+        const column = frameIndex % walkFrameCount;
+        return { sx: column * spriteFrameWidth, sy: walkRow * spriteFrameHeight };
+    }
+
+    function drawPlayerToCanvas(ply) {
+        const state = ply.state;
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(state.position.x, state.position.y);
+        ctx.lineTo(state.weapon.x, state.weapon.y);
+        ctx.stroke();
+
+        const weaponSprite = weaponSprites[state.weaponSpriteIndex] || weaponSprites[0];
+        const weaponSize = weaponRadius * 2;
+        if (weaponSprite && weaponSprite.ready) {
+            const crop = weaponSprite.crop;
+            ctx.drawImage(
+                weaponSprite.image,
+                crop.sx,
+                crop.sy,
+                crop.sw,
+                crop.sh,
+                state.weapon.x - weaponSize / 2,
+                state.weapon.y - weaponSize / 2,
+                weaponSize,
+                weaponSize
+            );
+        } else {
+            ctx.beginPath();
+            ctx.fillStyle = "white";
+            ctx.arc(state.weapon.x, state.weapon.y, weaponRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        const sheet = playerSpriteSheets[state.spriteSheetIndex] || playerSpriteSheets[0];
+        const spriteInfo = state.sprite;
+        if (sheet && sheet.ready) {
+            const frame = getSpriteFrameRect(spriteInfo.direction, spriteInfo.moving, spriteInfo.frameIndex, state.spriteSheetIndex);
+            const destWidth = spriteFrameWidth * spriteScale;
+            const destHeight = spriteFrameHeight * spriteScale;
+            ctx.drawImage(
+                sheet.image,
+                frame.sx,
+                frame.sy,
+                spriteFrameWidth,
+                spriteFrameHeight,
+                state.position.x - destWidth / 2,
+                state.position.y - destHeight / 2,
+                destWidth,
+                destHeight
+            );
+        } else {
+            ctx.beginPath();
+            ctx.fillStyle = state.color;
+            ctx.arc(state.position.x, state.position.y, playerRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+        }
+    }
+
+    function drawBallToCanvas(ballState) {
+        const destSize = ballRadius * 2;
+        if (ballSpriteSheet.ready && ballState.sprite) {
+            const frames = ballSpriteSheet.animations[ballState.sprite.type] || ballSpriteSheet.animations.single;
+            if (frames && frames.length > 0) {
+                const frame = frames[ballState.sprite.frameIndex % frames.length];
+                const frameSize = ballSpriteSheet.frameSize;
+                ctx.drawImage(
+                    ballSpriteSheet.image,
+                    frame.sx,
+                    frame.sy,
+                    frameSize,
+                    frameSize,
+                    ballState.position.x - destSize / 2,
+                    ballState.position.y - destSize / 2,
+                    destSize,
+                    destSize
+                );
+                return;
+            }
+        } else {
+            ctx.beginPath();
+            ctx.fillStyle = "grey";
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = 2;
+            ctx.arc(ballState.position.x, ballState.position.y, ballRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+            return;
+        }
+        ctx.beginPath();
+        ctx.fillStyle = "grey";
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 2;
+        ctx.arc(ballState.position.x, ballState.position.y, ballRadius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+    }
+
+    function renderCanvas() {
+        ctx.clearRect(0, 0, svgWidth, svgHeight);
+
+        ctx.fillStyle = "#0b1e34";
+        ctx.fillRect(0, 0, svgWidth, svgHeight);
+
+        if (backgroundImage.ready) {
+            const img = backgroundImage.image;
+            const scale = Math.max(svgWidth / img.width, svgHeight / img.height);
+            const destWidth = img.width * scale;
+            const destHeight = img.height * scale;
+            const dx = (svgWidth - destWidth) / 2;
+            const dy = (svgHeight - destHeight) / 2;
+            ctx.drawImage(img, dx, dy, destWidth, destHeight);
+        }
+
+        if (iceManager) {
+            iceManager.draw(ctx);
+        }
+        if (bombManager) {
+            bombManager.draw(ctx);
+        }
+
+        for (let i = 0; i < balls.length; i += 1) {
+            const ball = balls[i];
+            if (!ball || ball.state.exist === 0) continue;
+            drawBallToCanvas(ball.state);
+        }
+
+        for (let i = 0; i < players.length; i += 1) {
+            const ply = players[i];
+            if (!ply) continue;
+            drawPlayerToCanvas(ply);
+        }
+
+        ctx.save();
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        ctx.lineJoin = "round";
+
+        const scoreText = gameState.scores.left + ' : ' + gameState.scores.right;
+        ctx.font = "140px 'Alfa Slab One', serif"; 
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 12;
+        ctx.strokeText(scoreText, svgWidth / 2, svgHeight * 0.05);
+        ctx.fillStyle = "#ffffff";
+        ctx.fillText(scoreText, svgWidth / 2, svgHeight * 0.05);
+
+        const cheatText = "cheat mode: " + (gameState.cheatMode ? "on" : "off");
+        ctx.font = "64px 'Alfa Slab One', serif";
+        ctx.lineWidth = 8;
+        ctx.strokeText(cheatText, svgWidth / 2, svgHeight * 0.15);
+        ctx.fillText(cheatText, svgWidth / 2, svgHeight * 0.15);
+        if (gameStartTime !== null) {
+            const elapsed = Math.max(0, Date.now() - gameStartTime);
+            const remaining = Math.max(0, gameDurationMs - elapsed);
+            const minutes = Math.floor(remaining / 60000);
+            const seconds = Math.floor((remaining % 60000) / 1000);
+            const timeText = minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
+            ctx.textAlign = "right";
+            ctx.font = "72px 'Alfa Slab One', serif";
+            ctx.lineWidth = 8;
+            ctx.strokeText(timeText, svgWidth - 80, svgHeight * 0.05);
+            ctx.fillText(timeText, svgWidth - 80, svgHeight * 0.05);
+        }
+        ctx.restore();
+
+        if (gameState.gameOver) {
+            ctx.save();
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.font = "120px 'Alfa Slab One', serif";
+            ctx.strokeStyle = "#000000";
+            ctx.lineWidth = 10;
+            ctx.lineJoin = "round";
+            ctx.strokeText("GAME OVER", svgWidth / 2, svgHeight / 2);
+            ctx.fillStyle = "#ffffff";
+            ctx.fillText("GAME OVER", svgWidth / 2, svgHeight / 2);
+            ctx.restore();
+        } else if (gameState.dieMessage && Date.now() < gameState.dieUntil) {
+            ctx.save();
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.font = "96px 'Alfa Slab One', serif";
+            ctx.lineWidth = 10;
+            ctx.strokeStyle = "#000000";
+            ctx.lineJoin = "round";
+            ctx.strokeText(gameState.dieMessage, svgWidth / 2, svgHeight / 2);
+            ctx.fillStyle = "#ffffff";
+            ctx.fillText(gameState.dieMessage, svgWidth / 2, svgHeight / 2);
+            ctx.restore();
+        }
+    }
+
+    function updateAll() {
+        if (!gameState.gameOver && gameStartTime !== null && (Date.now() - gameStartTime) >= gameDurationMs) {
+            gameOverShow();
+        }
+        if (gameState.gameOver) {
+            renderCanvas();
+            return;
+        }
+
+        if (iceManager) {
+            iceManager.update();
+        }
+        if (bombManager) {
+            bombManager.update();
+        }
+
+        for (let i = 0; i < playerCount; i += 1) {
+            const ply = players[i];
+            if (!ply) continue;
+            const dead = ply.updatePlayer(cheatMode && i === 1);
+            if (dead) {
+                handlePlayerDeath(i);
+                continue;
+            }
+
+            if (iceManager && !ply.state.weaponFrozen) {
+                const freezeMs = iceManager.handleWeaponCollision(ply.state.weapon, ply.weaponVelocity, weaponRadius);
+                if (freezeMs) {
+                    ply.state.weaponFrozen = true;
+                    ply.state.weaponFrozenUntil = Date.now() + freezeMs;
+                    ply.weaponVelocity.sx = 0;
+                    ply.weaponVelocity.sy = 0;
+                }
+            }
+        }
+
+        if (bombManager) {
+            const victims = bombManager.handlePlayerCollisions(players, playerRadius);
+            for (let v = 0; v < victims.length; v += 1) {
+                handlePlayerDeath(victims[v]);
+            }
+        }
+
+        for (let i = 0; i < ballCount; i += 1) {
+            const ball = balls[i];
+            if (!ball) continue;
+            ball.updateBall();
+        }
+
+        updateScoreDisplay();
+        syncGameState();
+        renderCanvas();
+        setTimeout(updateAll, stepTime);
+    }
+
+    function setDebugVisibility(visible) {
+        svgVisible = visible;
+        $("#mySVG").css("display", svgVisible ? "block" : "none");
+    }
+
+    function setKeyBindings() {
+        $(document).off("keydown");
+        $(document).on("keydown", (e) => {
+
+            if (e.key === ' ') {
+                cheatMode = 1 - cheatMode;
+                gameState.cheatMode = cheatMode;
+            } else if (e.key === '=' || e.key === '+') {
+                setDebugVisibility(!svgVisible); // Toggle SVG 调试层
+            }
+            for (let i = 0; i < playerCount; i += 1) {
+                const layout = playerKeyLayout[i];
+                const ply = players[i];
+                if (!ply) continue;
+                const useKeyCodes = layout[4] === 1;
+                if (useKeyCodes) {
+                    if (e.keyCode === layout[0]) ply.velocity.sx -= unit0;
+                    if (e.keyCode === layout[1]) ply.velocity.sx += unit0;
+                    if (e.keyCode === layout[2]) ply.velocity.sy -= unit0;
+                    if (e.keyCode === layout[3]) ply.velocity.sy += unit0;
+                } else {
+                    if (e.key === layout[0]) ply.velocity.sx -= unit0;
+                    if (e.key === layout[1]) ply.velocity.sx += unit0;
+                    if (e.key === layout[2]) ply.velocity.sy -= unit0;
+                    if (e.key === layout[3]) ply.velocity.sy += unit0;
+                }
+                ply.velocity.sx = Math.min(Math.max(ply.velocity.sx, -maxV0), maxV0);
+                ply.velocity.sy = Math.min(Math.max(ply.velocity.sy, -maxV0), maxV0);
+            }
+        });
+    }
+
+    function generateBalls() {
+        balls.push(createBall());
+        setTimeout(generateBalls, Math.random() * 5000);
+    }
+
+    function generateIces() {
+        if (iceManager) {
+            iceManager.spawnRandom();
+        }
+        setTimeout(generateIces, Math.random() * 30000 + 30000);
+    }
+
+    function generateBombs() {
+        if (bombManager) {
+            bombManager.spawnRandom();
+        }
+        setTimeout(generateBombs, Math.random() * 15000 + 5000);
+    }
+
+    $(function() {
+        const playerTotal = 2;
+        for (let i = 0; i < playerTotal; i += 1) {
+            players.push(createPlayer());
+        }
+        iceManager = IceManager(ctx, document.getElementById("mySVG"), {
+            moveCircle,
+            stepTime,
+            svgWidth,
+            svgHeight,
+            ballRadius,
+            weaponRadius,
+            iceRadius: ballRadius * 1.5,
+            renderScale: 1.2,
+            freezeDuration: 2000
+        });
+        bombManager = BombManager(ctx, document.getElementById("mySVG"), {
+            moveCircle,
+            stepTime,
+            svgWidth,
+            svgHeight,
+            playerRadius,
+            bombRadius: 45,
+            renderScale: 0.7
+        });
+        setDebugVisibility(false);
+        setKeyBindings();
+        updateScoreDisplay();
+        syncGameState();
+        renderCanvas();
+        gameStartTime = Date.now();
+        generateBalls();
+        generateIces();
+        generateBombs();
+        updateAll();
+
+    });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SUN Yi Xiu - Personal Page</title>
+    <style>
+        /* Global Styles */
+        :root {
+            --primary-color: #26a69a;
+            --hover-color: #4db6ac;
+            --bg-color: #12181b;
+            --surface-color: #171d20;
+            --surface-alt: #1c2225;
+            --surface-hover: #243034;
+            --text-color: #e6eaed;
+            --muted-color: #9aa3a7;
+            --border-color: #223034;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /* Layout Container */
+        .container {
+            display: flex;
+            min-height: 100vh; /* Ensure content fills the viewport height */
+            max-width: 1200px; /* Limit maximum width */
+            margin: 0 auto; /* Center the container */
+            background-color: var(--surface-color);
+            box-shadow: 0 0 10px rgba(0,0,0,0.45);
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px; /* Sidebar width */
+            background-color: var(--surface-alt);
+            padding: 2em;
+            box-sizing: border-box; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            flex-shrink: 0; /* Prevent sidebar from shrinking */
+        }
+
+        .sidebar h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+            margin-bottom: 0.5em;
+        }
+
+        .profile-photo {
+            width: 150px; /* Photo width */
+            height: 150px; /* Photo height */
+            border-radius: 50%; /* Circular photo */
+            object-fit: cover; 
+            margin-bottom: 1.5em;
+            border: 3px solid var(--border-color);
+        }
+
+        .sidebar-nav ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 2em;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: 0.8em;
+        }
+
+        .sidebar-nav a {
+            text-decoration: none;
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: color 0.3s ease;
+        }
+
+        .sidebar-nav a:hover {
+            color: var(--hover-color);
+        }
+
+        /* Main Content Area Styles */
+        .main-content {
+            flex-grow: 1; /* Main content takes remaining space */
+            padding: 2em 3em;
+            box-sizing: border-box;
+        }
+
+        .main-content h1 {
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5em;
+            margin-top: 0;
+        }
+
+        .main-content h2 {
+            color: var(--hover-color);
+            margin-top: 1.5em;
+            margin-bottom: 0.8em;
+        }
+
+        .main-content p {
+            margin-bottom: 1em;
+            max-width: 700px; /* Limit paragraph width for readability */
+        }
+
+        .main-content ul {
+            margin-left: 0.5em;
+            margin-bottom: 1em;
+        }
+
+        .main-content li {
+            margin-bottom: 0.5em;
+        }
+
+        .button-link {
+            display: inline-block;
+            margin-top: 1em;
+            padding: 0.6em 1.2em;
+            background-color: var(--primary-color);
+            color: #fff;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .button-link:hover {
+            background-color: #1d8b81;
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .button-link.secondary {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .button-link.secondary:hover {
+            background-color: var(--surface-hover);
+            color: var(--hover-color);
+        }
+
+        a {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        a:hover {
+            color: var(--hover-color); /*#00796b */
+            text-decoration: underline;
+        }
+
+        .rednote-link {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        /* Mobile Adaptation */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column; /* Stack sidebar and content vertically on small screens */
+            }
+            .sidebar {
+                width: 100%; /* Full width sidebar */
+                padding: 1.5em;
+            }
+            .main-content {
+                padding: 1.5em 2em;
+            }
+            .sidebar-nav ul {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                margin-top: 1em;
+            }
+            .sidebar-nav li {
+                margin: 0.5em 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            
+<img src="photo.jpg" alt="SUN Yi Xiu's Photo" class="profile-photo"> 
+            <h2>SUN Yi Xiu</h2>
+            <!--
+            <p>DSCT Year 2 Student at HKUST</p>
+            -->
+            <nav class="sidebar-nav">
+                <ul>
+                    <li><a href="#about">About Me</a></li>
+                    <li><a href="#research">Research Interest</a></li>
+                    <li><a href="#hobbies">Hobbies</a></li>
+                    <li><a href="#projects">Experiences</a></li>
+                    <li><a href="#fun-facts">Fun Facts</a></li>
+                    <!--
+                    <li><a href="Notes/notes_index.html">Notes</a></li>
+                    -->
+                    <li><a href="#language">Language Proficiency</a></li>
+                    <li><a href="#contact">Contact Info</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <section id="about">
+                <h1>Hi there!</h1>
+                
+                <p>I am SUN Yi Xiu (孙一修), an HKUST UG student (Class of 2028) majoring in Data Science and Technology (DSCT).</p>
+            </section>
+
+            <section id="research">
+                <h2>Current Research Interest</h2>
+                <p>To be updated.</p>
+            </section>
+
+
+            <section id="hobbies">
+                <h2>Hobbies</h2>
+                <ul>
+                    <li>Gym</li>
+                    <li>Listening to music (Pink Floyd, King Crimson, toe, etc.)</li>
+                </ul>
+            </section>
+
+            <section id="projects">
+                <h2>Experiences</h2>
+                <ul>
+                    <li>Here are the <a href="courses_taken.html">courses</a> I have taken or am currently taking. </li>
+                    <!-- PS: If you're taking the same course, feel free to contact me to review our assignments together(对答案)! -->
+                </ul>
+
+            </section>
+            
+            <section id="fun-facts">
+                <h2>Fun Facts</h2>
+                <ul>
+                    <!--
+                    <li>My mbti: infp<img src="infp.svg" alt="INFP icon" width="20" height="20"></li>
+                    <li>Alternative names: 兰可人, LKR, 李可然.</li>
+                    -->
+                    <li>My <a href="Notes/notes_index.html">notes.</a></p></li>
+                    <li>Welcome to play my <a href="4021_game/start_page.html">game</a> (which is a group project of COMP4021 in 25 Fall).</li>
+                </ul>
+            </section>
+            <!--
+            <section id="notes">
+                <h2>Notes</h2>
+                <p><a href="Notes/notes_index.html">Browse the notes directory.</a></p>
+            </section>
+            -->
+
+            <section id="language">
+                <h2>Language Proficiency</h2>
+                <ul>
+                    <li>Mandarin - Native</li>
+                    <li>English - General</li>
+                </ul>
+            </section>
+            <section id="contact">
+                <h2>Contact Info</h2>
+                <p>Email: ysunem[at]connect[dot]ust[dot]hk</p>
+                <p>WeChat: You can ask me through email.</p>
+            </section>
+        </main>
+    </div>
+        <script data-goatcounter="https://truvix.goatcounter.com/count"
+        async src="//gc.zgo.at/count.js"></script>
+</body>
+</html>
+
+

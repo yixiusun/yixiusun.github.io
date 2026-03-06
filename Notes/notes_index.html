@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes - SUN Yi Xiu</title>
+    <style>
+        :root {
+            --color-primary: #26a69a;
+            --color-hover: #4db6ac;
+            --color-bg: #12181b;
+            --color-surface: #171d20;
+            --color-surface-alt: #1c2225;
+            --color-surface-hover: #243034;
+            --color-text: #e6eaed;
+            --color-muted: #9aa3a7;
+            --color-border: #223034;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            margin: 0;
+            padding: 0;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.65;
+        }
+        .page-wrapper {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem 4rem;
+        }
+        .page-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 2.2rem;
+        }
+        .page-header h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 650;
+            color: var(--color-primary);
+        }
+        .page-nav {
+            margin-top: 0;
+            font-size: 0.95rem;
+            color: var(--color-muted);
+        }
+        .page-nav a {
+            color: var(--color-primary);
+            text-decoration: none;
+            margin-right: 1rem;
+        }
+        .page-nav a:hover {
+            text-decoration: underline;
+        }
+        .page-card {
+            background-color: var(--color-surface);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+            padding: 2.5rem 2.75rem;
+        }
+        .page-card p {
+            max-width: 680px;
+        }
+        a {
+            color: var(--color-primary);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+        a:hover {
+            color: var(--color-hover);
+            text-decoration: underline;
+        }
+        .note-content ul,
+        .note-content ol {
+            margin: 0 0 1rem;
+            padding-left: 0;
+        }
+        .note-content ul > li,
+        .note-content ol > li {
+            background: var(--color-surface-alt);
+            margin-bottom: 0.6rem;
+            padding: 0.65rem 0.85rem;
+            border-radius: 10px;
+            border-left: 4px solid transparent;
+            transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+        .note-content ul > li {
+            list-style: none;
+        }
+        .note-content ol {
+            padding-left: 1.5rem;
+        }
+        .note-content ul > li:hover,
+        .note-content ol > li:hover {
+            background: var(--color-surface-hover);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+            transform: translateX(4px);
+            border-left-color: var(--color-primary);
+        }
+        .note-content li > ul,
+        .note-content li > ol {
+            margin-top: 0.6rem;
+            padding-left: 1.25rem;
+        }
+        .note-content li li {
+            background: transparent;
+            border-left-color: var(--color-border);
+            box-shadow: none;
+            transform: none;
+        }
+        .note-content > *:first-child {
+            margin-top: 0;
+        }
+        .note-content > *:last-child {
+            margin-bottom: 0;
+        }
+        .note-directory ul {
+            list-style: none;
+            margin: 0;
+            padding-left: 1.1rem;
+            border-left: 1px solid var(--color-border);
+        }
+        .note-directory > ul {
+            margin: 0.75rem 0 0;
+            padding-left: 0;
+            border-left: none;
+        }
+        .note-directory ul ul {
+            margin-top: 0.4rem;
+        }
+        .note-directory li {
+            position: relative;
+            padding-left: 0.75rem;
+            margin-bottom: 0.35rem;
+        }
+        .note-directory li::before {
+            content: "";
+            position: absolute;
+            left: -0.85rem;
+            top: 0.95rem;
+            width: 0.55rem;
+            height: 1px;
+            background: var(--color-border);
+        }
+        .note-folder {
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+        .directory-empty {
+            font-style: italic;
+            color: var(--color-muted);
+        }
+        @media (max-width: 720px) {
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .page-nav {
+                margin-top: 0.5rem;
+            }
+            .page-card {
+                padding: 2rem 1.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <header class="page-header">
+            <h1>Notes</h1>
+            <nav class="page-nav"><a href="../index.html">Home</a></nav>
+        </header>
+        <main class="page-card">
+            <p class="notes-summary">No notes published yet.</p>
+            <p class="directory-empty">Once notes are available, they will appear here.</p>
+        </main>
+    </div>
+</body>
+</html>
