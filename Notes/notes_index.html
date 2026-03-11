@@ -6,22 +6,22 @@
     <title>Notes - SUN Yi Xiu</title>
     <style>
         :root {
-            --color-primary: #26a69a;
-            --color-hover: #4db6ac;
-            --color-bg: #12181b;
-            --color-surface: #171d20;
-            --color-surface-alt: #1c2225;
-            --color-surface-hover: #243034;
-            --color-text: #e6eaed;
-            --color-muted: #9aa3a7;
-            --color-border: #223034;
+            --primary-color: #26a69a;
+            --hover-color: #4db6ac;
+            --bg-color: #000000;
+            --surface-color: #070a0c;
+            --surface-alt: #0e1315;
+            --surface-hover: #151c1f;
+            --text-color: white;
+            --muted-color: #9aa3a7;
+            --border-color: #223034;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
             margin: 0;
             padding: 0;
-            background-color: var(--color-bg);
-            color: var(--color-text);
+            background-color: var(--bg-color);
+            color: var(--text-color);
             line-height: 1.65;
         }
         .page-wrapper {
@@ -40,15 +40,15 @@
             margin: 0;
             font-size: 2rem;
             font-weight: 650;
-            color: var(--color-primary);
+            color: var(--primary-color);
         }
         .page-nav {
             margin-top: 0;
             font-size: 0.95rem;
-            color: var(--color-muted);
+            color: var(--muted-color);
         }
         .page-nav a {
-            color: var(--color-primary);
+            color: var(--primary-color);
             text-decoration: none;
             margin-right: 1rem;
         }
@@ -56,7 +56,7 @@
             text-decoration: underline;
         }
         .page-card {
-            background-color: var(--color-surface);
+            background-color: var(--surface-color);
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
             padding: 2.5rem 2.75rem;
@@ -65,12 +65,12 @@
             max-width: 680px;
         }
         a {
-            color: var(--color-primary);
+            color: var(--primary-color);
             text-decoration: none;
             transition: color 0.2s ease;
         }
         a:hover {
-            color: var(--color-hover);
+            color: var(--hover-color);
             text-decoration: underline;
         }
         .note-content ul,
@@ -80,7 +80,7 @@
         }
         .note-content ul > li,
         .note-content ol > li {
-            background: var(--color-surface-alt);
+            background: var(--surface-alt);
             margin-bottom: 0.6rem;
             padding: 0.65rem 0.85rem;
             border-radius: 10px;
@@ -95,10 +95,10 @@
         }
         .note-content ul > li:hover,
         .note-content ol > li:hover {
-            background: var(--color-surface-hover);
+            background: var(--surface-hover);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
             transform: translateX(4px);
-            border-left-color: var(--color-primary);
+            border-left-color: var(--primary-color);
         }
         .note-content li > ul,
         .note-content li > ol {
@@ -107,7 +107,7 @@
         }
         .note-content li li {
             background: transparent;
-            border-left-color: var(--color-border);
+            border-left-color: var(--border-color);
             box-shadow: none;
             transform: none;
         }
@@ -121,7 +121,7 @@
             list-style: none;
             margin: 0;
             padding-left: 1.1rem;
-            border-left: 1px solid var(--color-border);
+            border-left: 1px solid var(--border-color);
         }
         .note-directory > ul {
             margin: 0.75rem 0 0;
@@ -143,15 +143,15 @@
             top: 0.95rem;
             width: 0.55rem;
             height: 1px;
-            background: var(--color-border);
+            background: var(--border-color);
         }
         .note-folder {
             font-weight: 600;
-            color: var(--color-primary);
+            color: var(--primary-color);
         }
         .directory-empty {
             font-style: italic;
-            color: var(--color-muted);
+            color: var(--muted-color);
         }
         @media (max-width: 720px) {
             .page-header {
