@@ -1,0 +1,91 @@
+
+    :root { color-scheme: light; font-family: Arial, "Microsoft YaHei", sans-serif; color: #111; background: #fff; }
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+    button, input { font: inherit; border-radius: 0; }
+    button { border: 1px solid #111; padding: 11px 18px; background: white; color: #111; cursor: default; }
+    button:focus-visible, input:focus-visible { outline: 2px solid #111; outline-offset: 4px; }
+    .page { max-width: 1180px; padding: 0 42px; margin: auto; }
+    header { display: flex; align-items: center; justify-content: space-between; padding: 28px 0; border-bottom: 2px solid #111; gap: 20px; }
+    .brand { font-size: 26px; font-weight: 800; letter-spacing: -1px; }
+    .brand span { font-size: 12px; font-weight: 400; letter-spacing: 2px; margin-left: 18px; }
+    .room { font-size: 12px; display: flex; align-items: center; gap: 22px; }
+    .room button { border: 0; border-bottom: 1px solid; padding: 3px 0; font-size: 12px; }
+    .intro { display: flex; align-items: end; justify-content: space-between; margin: 22px 0; gap: 16px; }
+    .eyebrow { font: 11px/1.5 Consolas, monospace; letter-spacing: 2px; margin: 0 0 10px; }
+    h1 { font-size: 30px; font-weight: 500; letter-spacing: -1px; margin: 0; }
+    .intro p:last-child { font-size: 12px; margin: 0 0 4px; }
+    .board { display: grid; grid-template-columns: minmax(0, 1fr) 290px; border-top: 1px solid #111; }
+    .main { padding-right: 32px; }
+    .companies { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid #111; }
+    .company { padding: 24px 0; }
+    .company + .company { border-left: 1px solid #111; padding-left: 26px; }
+    .company:first-child { padding-right: 26px; }
+    .company-title { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+    h2 { font-size: 16px; font-weight: 500; margin: 0; }
+    .tag { font-size: 10px; padding: 3px 6px; border: 1px solid #111; }
+    .tag.solid { color: white; background: #111; }
+    .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .label { font-size: 11px; display: block; margin-bottom: 8px; }
+    .number { font: 44px/1 Consolas, monospace; letter-spacing: -3px; }
+    .small { font-size: 11px; margin: 12px 0 0; line-height: 1.6; }
+    .gems { display: flex; gap: 20px; font-size: 11px; margin-top: 26px; }
+    .section { padding: 24px 0; border-bottom: 1px solid #111; }
+    .section-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 19px; gap: 12px; }
+    .section-heading span { font-size: 11px; }
+    .steps { display: flex; gap: 20px; font-size: 11px; }
+    .steps strong { border-bottom: 1px solid; padding-bottom: 5px; font-weight: 500; }
+    .action-title { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin: 26px 0 20px; }
+    h3 { font-size: 15px; font-weight: 500; margin: 0; }
+    .action-title span { font-size: 11px; }
+    .controls { display: grid; grid-template-columns: 1fr 1fr auto; align-items: end; gap: 14px; }
+    label { font-size: 11px; }
+    .field { display: flex; border-bottom: 1px solid #111; align-items: center; margin-top: 7px; }
+    input { width: 100%; min-width: 0; border: 0; padding: 10px 0; background: white; font-family: Consolas, monospace; font-size: 23px; }
+    .field span { white-space: nowrap; }
+    .primary { background: #111; color: white; min-height: 48px; font-size: 12px; }
+    .equation { margin: 24px 0; overflow-x: auto; padding: 6px 0; }
+    .equation math { font-size: 16px; white-space: nowrap; }
+    .other-actions { display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed #111; padding-top: 18px; gap: 12px; }
+    .other-actions div { font-size: 12px; }
+    .other-actions small { display: block; margin-top: 6px; font-size: 10px; }
+    .other-actions button { border: 0; padding: 8px 0; font-size: 12px; text-decoration: underline; text-underline-offset: 4px; }
+    table { border-collapse: collapse; width: 100%; text-align: left; font-size: 12px; }
+    th { font-size: 10px; font-weight: 400; padding: 0 0 14px; }
+    td { padding: 10px 0; border-top: 1px solid #ddd; }
+    th:last-child, td:last-child { text-align: right; }
+    td button { font-size: 11px; padding: 6px 16px; }
+    aside { border-left: 1px solid #111; padding: 24px 0 0 28px; }
+    .card { border: 1px solid #111; padding: 23px; margin: 20px 0 14px; text-align: center; }
+    .card .eyebrow { font-size: 9px; }
+    .gem-icon { display: block; font-size: 52px; margin: 20px 0 12px; line-height: 1; }
+    .card strong { font-size: 20px; font-weight: 400; }
+    .card p { font-size: 11px; line-height: 1.9; margin: 12px 0 0; }
+    .deck-meta { display: flex; justify-content: space-between; font-size: 10px; }
+    .history { margin-top: 33px; border-top: 1px solid #111; padding-top: 22px; }
+    .events { padding: 0; margin: 24px 0; list-style: none; }
+    .events li { border-left: 1px solid #111; padding: 0 0 23px 15px; position: relative; font-size: 11px; line-height: 1.8; }
+    .events li::before { content: ''; position: absolute; left: -3px; top: 6px; width: 5px; height: 5px; background: #111; }
+    .events time { display: block; font: 10px/1.5 Consolas, monospace; margin-bottom: 5px; }
+    .events li:last-child { padding-bottom: 0; }
+    footer { display: flex; justify-content: space-between; gap: 15px; padding: 26px 0; font-size: 10px; letter-spacing: .5px; }
+    @media (max-width: 850px) { .page { padding: 0 22px; } .board { grid-template-columns: 1fr; } .main { padding: 0; } aside { border: 0; padding: 26px 0; display: grid; grid-template-columns: 1fr 1fr; gap: 28px; border-bottom: 1px solid; } .history { margin: 0; padding: 0; border: 0; } }
+    @media (max-width: 540px) { .brand span { display: none; } .room { gap: 12px; } .intro { align-items: start; flex-direction: column; margin: 26px 0; } h1 { font-size: 26px; } .company + .company { padding-left: 16px; } .company:first-child { padding-right: 16px; } .number { font-size: 36px; } .gems { gap: 10px; } .controls { grid-template-columns: 1fr 1fr; } .primary { grid-column: 1 / -1; } .steps { gap: 12px; } .section-heading { align-items: start; } aside { grid-template-columns: 1fr; } footer { flex-direction: column; } }
+
+[hidden] { display: none !important; }
+button { cursor: pointer; }
+button:disabled { cursor: default; opacity: .4; }
+.lobby { max-width: 520px; margin: 64px auto; }
+.lobby h1 { font-size: 24px; margin-bottom: 28px; }
+.lobby input { font-size: 18px; border-bottom: 1px solid; margin: 12px 0 22px; }
+.lobby .join { display: flex; gap: 12px; align-items: center; }
+.lobby .join input { min-width: 0; }
+.message { font-size: 12px; min-height: 20px; margin: 16px 0; line-height: 1.7; }
+.actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+.science-form { display: flex; gap: 14px; align-items: end; margin-top: 18px; }
+.science-form input { max-width: 120px; }
+.events { max-height: 430px; overflow: auto; }
+.statusline { display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+.statusline button { padding: 5px 8px; font-size: 11px; }
+#models td { font-family: Consolas, 'Microsoft YaHei', monospace; }
+#connection { font-size: 11px; }

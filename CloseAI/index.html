@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>CloseAI</title><link rel="stylesheet" href="./style.css"><script src="./config.js" defer></script><script src="./app.js" defer></script></head>
+<body><div class="page">
+<header><div class="brand">CloseAI<span>能源竞赛</span></div><div class="room"><span id="room-label"></span><button id="invite" hidden>邀请链接 ↗</button><button id="home" hidden>返回首页</button></div></header>
+<p id="message" class="message" role="status" aria-live="polite"></p>
+<section id="lobby" class="lobby"><h1>双人对局</h1><button id="create" class="primary">创建房间</button><div class="join"><input id="room-input" aria-label="房间码" placeholder="输入房间码" maxlength="12" autocomplete="off"><button id="join">加入</button></div><button id="resume" hidden>继续上次对局 →</button></section>
+<div id="game" hidden>
+<div class="intro statusline"><p id="turn-label"></p><span id="connection">已同步</span></div>
+<div class="board"><main class="main"><div id="companies" class="companies"></div>
+<section class="section"><div class="section-heading"><h2>你的行动</h2><div id="steps" class="steps"></div></div>
+<p id="action-status" class="small"></p>
+<div id="research" hidden><div class="action-title"><h3>模型研究</h3></div><form id="model-form"><div class="controls"><label>研究投入<div class="field"><input id="cost" type="number" min="1" step="1" value="1" required><span>块</span></div></label><label>研究时间<div class="field"><input id="duration" type="number" min="1" max="1000000" step="1" value="1" required><span>回合</span></div></label><button class="primary" type="submit">开始研究 ↗</button></div></form><div class="equation"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block" aria-label="模型能力等于，log以2为底的投入向下取整加1，乘以时间加2，乘以前沿的log以2为底向下取整加1，再加骰子"><mrow><mtext>模型能力</mtext><mo>=</mo><mo>(</mo><msub><mi mathvariant="normal">log</mi><mn>2</mn></msub><mo>⌊</mo><mtext>投入</mtext><mo>⌋</mo><mo>+</mo><mn>1</mn><mo>)</mo><mo>×</mo><mo>(</mo><mtext>时间</mtext><mo>+</mo><mn>2</mn><mo>)</mo><mo>×</mo><mo>(</mo><mo>⌊</mo><msub><mi mathvariant="normal">log</mi><mn>2</mn></msub><mtext>前沿</mtext><mo>⌋</mo><mo>+</mo><mn>1</mn><mo>)</mo><mo>+</mo><mtext>骰子</mtext></mrow></math></div>
+<div class="other-actions"><button id="science-toggle">科学研究</button><button id="skip">跳过研究 →</button></div><form id="science-form" class="science-form" hidden><label>周期数 · 每周期20<div class="field"><input id="cycles" type="number" min="1" step="1" value="1" required></div></label><button type="submit">开始科学研究</button></form></div>
+<div id="publication" class="actions" hidden><button id="publish-yes" class="primary">发布模型</button><button id="hold">暂不发布</button></div>
+<div id="version-choice" class="actions" hidden></div><button id="end" class="primary" hidden>结束回合 →</button>
+</section>
+<section class="section"><div class="section-heading"><h2>内部模型</h2><span id="research-progress"></span></div><table><thead><tr><th>版本</th><th>能力</th><th>状态</th></tr></thead><tbody id="models"></tbody></table></section></main>
+<aside><section><div class="section-heading"><h2>能源突破</h2><span>下一张牌</span></div><div class="card"><span class="gem-icon" aria-hidden="true">◇</span><strong id="condition"></strong></div><div id="deck-meta" class="deck-meta"></div></section><section class="history"><div class="section-heading"><h2>对局记录</h2><button id="download" type="button">下载</button></div><ol id="events" class="events"></ol></section></aside></div></div>
+</div></body></html>
